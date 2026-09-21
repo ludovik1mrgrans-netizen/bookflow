@@ -1,0 +1,8 @@
+﻿.venv/
+__pycache__/
+*.pyc
+.env
+bookflow.db
+bookflow_backup.db
+app/main_backup.py
+app_backup_21_09_2026/
