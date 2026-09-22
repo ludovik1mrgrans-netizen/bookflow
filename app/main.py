@@ -129,12 +129,8 @@ async def telegram_notify(text: str, chat_id: str = ""):
 
 def admin_ok(request: Request, business=None):
     key = request.cookies.get("bookflow_admin")
-    if not key:
-        return False
-    if business is not None:
-        return key == business.admin_key
-    with Session(engine) as s:
-        return s.scalar(select(Business).where(Business.admin_key == key)) is not None
+    admin_key = os.getenv("ADMIN_KEY", "demo123")
+    return bool(key and key == admin_key)
 
 @app.get("/", response_class=HTMLResponse)
 def home(): return RedirectResponse("/b/milo-grooming")
@@ -187,10 +183,9 @@ def login_page(request: Request): return templates.TemplateResponse(request, "lo
 
 @app.post("/admin/login")
 def login(key: str = Form(...)):
-    with Session(engine) as s:
-        b = s.scalar(select(Business).where(Business.admin_key == key))
-        if not b:
-            return RedirectResponse("/admin/login?error=1", 303)
+    admin_key = os.getenv("ADMIN_KEY", "demo123")
+    if key != admin_key:
+        return RedirectResponse("/admin/login?error=1", 303)
     r = RedirectResponse("/admin", 303)
     r.set_cookie("bookflow_admin", key, httponly=True, samesite="lax")
     return r
@@ -242,7 +237,6 @@ def add_employee(request: Request, name: str = Form(...)):
         b = s.scalar(select(Business).where(Business.admin_key == key))
         s.add(Employee(business_id=b.id, name=name)); s.commit()
     return RedirectResponse("/admin#settings", 303)
-
 
 
 
