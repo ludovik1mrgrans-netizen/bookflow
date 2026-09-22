@@ -197,8 +197,7 @@ def logout():
 def admin(request: Request):
     if not admin_ok(request): return RedirectResponse("/admin/login")
     with Session(engine) as s:
-        key = request.cookies.get("bookflow_admin")
-        b = s.scalar(select(Business).where(Business.admin_key == key))
+        b = s.scalar(select(Business))
         rows = []
         for a in s.scalars(select(Appointment).where(Appointment.business_id == b.id).order_by(Appointment.starts_at.desc()).limit(200)):
             rows.append((a, s.get(Service, a.service_id), s.get(Employee, a.employee_id)))
